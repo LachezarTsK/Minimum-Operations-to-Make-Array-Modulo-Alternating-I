@@ -1,0 +1,62 @@
+
+using System;
+
+public class Solution
+{
+    public int MinOperations(int[] input, int divisor)
+    {
+        bool evenIndexes = true;
+        int[] minMovesAtEvenIndexes = CreateArrayMinMovesForSpecifiedIndexType(evenIndexes, input, divisor);
+        int[] minMovesAtOddIndexes = CreateArrayMinMovesForSpecifiedIndexType(!evenIndexes, input, divisor);
+        return FindMinOperationsToMakeArrayModuloAlternating(minMovesAtEvenIndexes, minMovesAtOddIndexes, divisor);
+    }
+
+    private int MovesUpToEqualizeToTargetModuloValue(int inputValue, int divisor, int targetModuloValue)
+    {
+        if (inputValue % divisor >= targetModuloValue)
+        {
+            return divisor - (inputValue % divisor) + targetModuloValue;
+        }
+        return targetModuloValue - (inputValue % divisor);
+    }
+
+    private int MovesDownToEqualizeToTargetModuloValue(int inputValue, int divisor, int targetModuloValue)
+    {
+        if (inputValue % divisor >= targetModuloValue)
+        {
+            return (inputValue % divisor) - targetModuloValue;
+        }
+        return (inputValue % divisor) + divisor - targetModuloValue;
+    }
+
+    private int[] CreateArrayMinMovesForSpecifiedIndexType(bool evenIndexes, int[] input, int divisor)
+    {
+        int[] minMoves = new int[divisor];
+        int startIndex = evenIndexes ? 0 : 1;
+        for (int targetModuloValue = 0; targetModuloValue < divisor; ++targetModuloValue)
+        {
+            for (int i = startIndex; i < input.Length; i += 2)
+            {
+                minMoves[targetModuloValue] += Math.Min(
+                        MovesUpToEqualizeToTargetModuloValue(input[i], divisor, targetModuloValue),
+                        MovesDownToEqualizeToTargetModuloValue(input[i], divisor, targetModuloValue));
+            }
+        }
+        return minMoves;
+    }
+
+    private int FindMinOperationsToMakeArrayModuloAlternating(int[] minMovesAtEvenIndexes, int[] minMovesAtOddIndexes, int divisor)
+    {
+        int minOperations = int.MaxValue;
+        for (int firstModValue = 0; firstModValue < divisor; ++firstModValue)
+        {
+            for (int secondModValue = firstModValue + 1; secondModValue < divisor; ++secondModValue)
+            {
+                int currentMin = Math.Min(minMovesAtEvenIndexes[firstModValue] + minMovesAtOddIndexes[secondModValue],
+                        minMovesAtEvenIndexes[secondModValue] + minMovesAtOddIndexes[firstModValue]);
+                minOperations = Math.Min(minOperations, currentMin);
+            }
+        }
+        return minOperations;
+    }
+}
